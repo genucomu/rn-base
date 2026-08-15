@@ -1,56 +1,77 @@
-# Welcome to your Expo app 👋
+# rn-base
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Proyecto base de React Native con **Expo SDK 57** (React Native 0.86, React 19.2.3) y `expo-router`, listo para escalar: Tailwind (NativeWind), TanStack Query, Zustand, Biome y Husky.
 
-## Get started
+## Stack
 
-1. Install dependencies
+| Área | Herramienta |
+| --- | --- |
+| Framework | [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/) |
+| Routing | [expo-router](https://docs.expo.dev/router/introduction/) (file-based) + NativeTabs |
+| Estilos | [NativeWind v5](https://www.nativewind.dev/v5) + [Tailwind CSS v4](https://tailwindcss.com) |
+| Datos de servidor | [TanStack Query v5](https://tanstack.com/query/latest) |
+| Estado global | [Zustand v5](https://zustand.docs.pmnd.rs) + `AsyncStorage` (persist) |
+| Lint / format | [Biome](https://biomejs.dev) |
+| Git hooks | Husky + lint-staged |
 
-   ```bash
-   npm install
-   ```
+## Requisitos
 
-2. Start the app
+- Node.js ≥ 22.13 (recomendado: 24+)
+- Expo Go o emulador (Android/iOS)
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Setup
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Comandos
 
-### Other setup steps
+| Comando | Descripción |
+| --- | --- |
+| `npm run start` | Levanta Expo dev server |
+| `npm run android` | Abre en Android |
+| `npm run ios` | Abre en iOS |
+| `npm run web` | Abre en web |
+| `npm run lint` | Biome check (sin escribir) |
+| `npm run lint:fix` | Biome check con autofix |
+| `npm run format` | Biome format --write |
+| `npm run typecheck` | `tsc --noEmit` |
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+El hook `pre-commit` (Husky) corre `typecheck` + `lint-staged` (Biome `check --write`) sobre los archivos staged.
 
-## Learn more
+## Estructura
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/
+├── app/            # Rutas (expo-router): _layout.tsx, index.tsx, explore.tsx
+├── components/     # Componentes UI (app-tabs, themed-text, etc.)
+├── constants/      # theme.ts (colores, fuentes, spacing)
+├── hooks/          # Hooks: use-theme, use-health (ejemplo de query)
+├── lib/            # query-client.ts (TanStack Query + focus/online manager)
+├── stores/         # Zustand: settings-store.ts (ejemplo con persist)
+└── global.css      # Tailwind v4 imports + variables de fuente
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Convenciones
 
-## Join the community
+- **Estado servidor → TanStack Query** (fetch, caché, mutaciones). Nunca guardar datos de API en Zustand.
+- **Estado global cliente → Zustand** (settings, auth, UI), con `persist` via AsyncStorage si debe sobrevivir al reinicio.
+- **Estilos con NativeWind**: usar `className` en componentes RN. Para colores que cambian con el tema, usar variantes `dark:`.
+- **Nuevas pantallas**: archivo en `src/app/` + registro en `src/components/app-tabs.tsx` (ver skill `new-screen`).
+- **Módulos nativos**: instalar con `npx expo install` (respeta versiones del SDK).
+- **Lint**: Biome reemplaza ESLint y Prettier. Correr `npm run lint:fix` antes de commitear.
 
-Join our community of developers creating universal apps.
+## Notas del setup
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- NativeWind v5 (pre-release) + Tailwind v4: se configura en `metro.config.js` (`withNativewind`) y `postcss.config.mjs` (`@tailwindcss/postcss`). No hay `babel.config.js`.
+- ⚠️ `package.json` fija `overrides.lightningcss: "1.30.1"` — **no tocarlo**. Sin ese pin el bundler falla al procesar `global.css`.
+- El app usa light/dark mode automático (usa `useColorScheme` / `useTheme`).
+
+## Docs
+
+- Expo SDK 57: https://docs.expo.dev/versions/v57.0.0/
+- NativeWind v5: https://www.nativewind.dev/v5
+- TanStack Query: https://tanstack.com/query/latest
+- Zustand: https://zustand.docs.pmnd.rs
+- Biome: https://biomejs.dev
