@@ -36,6 +36,26 @@ Proyecto base de React Native con **Expo SDK 57** (RN 0.86, React 19.2.3) + expo
 - Nuevas pantallas: agregar archivo en `src/app/` (expo-router) y registrar el tab en `src/components/app-tabs.tsx`.
 - Al agregar librerías con módulos nativos usar `npx expo install` (respeta versiones del SDK).
 
+## Workflow SDD (Spec-Driven Development)
+
+Features nuevas se construyen con el pipeline `/sdd`:
+
+```
+/sdd "idea"
+  spec-writer ─► docs/specs/<slug>.md  → [gate: aprobás?]
+  architect   ─► docs/plans/<slug>.md  → [gate: aprobás?]
+  implementer ─► código (paralelo cuando no hay conflictos)
+  verificación: npm run typecheck + lint:fix
+  reviewer    ─► informe diff vs spec/plan
+```
+
+- Orquestador: agente `build` (playbook en `.opencode/skills/sdd-orchestrator/SKILL.md`).
+- Subagentes: `spec-writer`, `architect`, `implementer`, `reviewer` (en `.opencode/agents/`).
+- Artefactos: spec en `docs/specs/`, plan en `docs/plans/` (mismo slug kebab-case).
+- Gates: la tool `question` (Aprobar / Editar / Rechazar). En "Editar" se re-ejecuta
+  la etapa con el feedback del usuario.
+- El orquestador **no hace commit** sin pedirlo.
+
 ## Docs
 
 **Expo HAS CHANGED** — leer las docs versionadas en https://docs.expo.dev/versions/v57.0.0/ antes de escribir código.
