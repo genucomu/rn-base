@@ -33,6 +33,7 @@ Proyecto base de React Native con **Expo SDK 57** (RN 0.86, React 19.2.3) + expo
 
 - Estilo: Biome (spaces/2, single quotes, semicolons always, trailing commas all, lineWidth 100). Formatear antes de commit: `npm run lint:fix`.
 - Estado servidor → TanStack Query. Estado global cliente → Zustand.
+- Nuevos componentes: seguir skill `nativewind-generator` (NativeWind className > StyleSheet).
 - Nuevas pantallas: agregar archivo en `src/app/` (expo-router) y registrar el tab en `src/components/app-tabs.tsx`.
 - Al agregar librerías con módulos nativos usar `npx expo install` (respeta versiones del SDK).
 
