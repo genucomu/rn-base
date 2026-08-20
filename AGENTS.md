@@ -6,8 +6,8 @@ Proyecto base de React Native con **Expo SDK 57** (RN 0.86, React 19.2.3) + expo
 
 - **Expo SDK 57** — `expo-router` (file-based routing) con NativeTabs, estructura en `src/`, alias `@/*` → `src/` y `@/assets/*` → `assets/`.
 - **NativeWind v5 (preview)** + **Tailwind CSS v4** — utilidades de Tailwind en RN. Sin `babel.config.js`; se configura en `metro.config.js` (`withNativewind`) y `postcss.config.mjs` (`@tailwindcss/postcss`). Requiere `overrides.lightningcss: "1.30.1` (ver abajo).
-- **TanStack Query v5** — fetching/caching de servidor. Provider en `src/app/_layout.tsx`, config en `src/lib/query-client.ts`.
-- **Zustand v5** — estado global. Store de ejemplo con persist (`AsyncStorage`) en `src/stores/settings-store.ts`.
+- **TanStack Query v5** — fetching/caching de servidor. Provider en `src/app/_layout.tsx`, config en `src/lib/query-client.ts`. Services en `src/services/`, hooks en `src/hooks/`, query keys en `src/lib/query-keys.ts`.
+- **Zustand v5** — estado global. Stores en `src/stores/`. Auth store (`auth-store.ts`) maneja tokens + usuario con persist.
 - **Biome** — linter + formatter (reemplaza ESLint y Prettier). Config en `biome.json`.
 - **Husky + lint-staged** — hook `pre-commit` que corre `typecheck` y `biome check --write`.
 
@@ -35,6 +35,28 @@ Proyecto base de React Native con **Expo SDK 57** (RN 0.86, React 19.2.3) + expo
 - Estado servidor → TanStack Query. Estado global cliente → Zustand.
 - Nuevas pantallas: agregar archivo en `src/app/` (expo-router) y registrar el tab en `src/components/app-tabs.tsx`.
 - Al agregar librerías con módulos nativos usar `npx expo install` (respeta versiones del SDK).
+
+## Arquitectura de capas
+
+```
+src/app/<route>.tsx    →  pages/layouts: orquestan hooks + componentes
+src/hooks/use-*.ts     →  useQuery / useMutation: llaman a services
+src/services/*.ts      →  services: fetch a la API, retornan Promise<T>
+src/services/http.ts   →  cliente HTTP: token injection, auto-refresh 401
+src/components/*.tsx   →  componentes: UI pura, reciben data por props
+src/types/api.ts       →  types: DTOs tipados de la API
+src/lib/query-keys.ts  →  query keys: constantes centralizadas
+src/lib/config.ts      →  config: API_BASE_URL desde EXPO_PUBLIC_API_URL
+src/stores/*.ts        →  stores: Zustand para estado global del cliente
+```
+
+**Regla clave**: las pages/layouts usan hooks. Los componentes solo renderizan. Los services solo hacen fetch.
+
+## API
+
+La app consume una API NestJS en `http://localhost:3000` (configurable vía `EXPO_PUBLIC_API_URL`).
+
+Módulos: Auth, Users, Billing (legal entities, points of sale, customers, products, price lists, invoices), Pricing (sync catálogo externo).
 
 ## Workflow SDD (Spec-Driven Development)
 

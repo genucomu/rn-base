@@ -7,28 +7,37 @@ description: Workflow for adding a new screen/route in the rn-base expo-router p
 
 En este proyecto las rutas son archivos en `src/app/` (expo-router, file-based).
 
+## Arquitectura de capas
+
+```
+src/app/<route>.tsx    →  importa hooks + componentes, orquesta la pantalla
+src/hooks/use-*.ts     →  useQuery / useMutation, llaman a services
+src/services/*.ts      →  fetch a la API, retornan Promise<T>
+src/components/*.tsx   →  UI pura, reciben data por props
+src/types/api.ts       →  DTOs tipados de la API
+```
+
+**Regla**: las pages/layouts usan hooks. Los componentes solo renderizan. Los services solo hacen fetch.
+
 ## Pasos
 
 1. **Crear el archivo de ruta** en `src/app/<name>.tsx`:
 
    ```tsx
-   import { ThemedText } from '@/components/themed-text';
-   import { ThemedView } from '@/components/themed-view';
-   import { SafeAreaView } from 'react-native-safe-area-context';
+   import { useXxx } from '@/hooks/use-xxx';
+   import { XxxList } from '@/components/xxx-list';
 
-   export default function Screen() {
-     return (
-       <ThemedView style={{ flex: 1 }}>
-         <SafeAreaView>
-           <ThemedText type="title">Nueva pantalla</ThemedText>
-         </SafeAreaView>
-       </ThemedView>
-     );
+   export default function XxxScreen() {
+     const { data, isLoading, error } = useXxx();
+
+     if (isLoading) return <LoadingState />;
+     if (error) return <ErrorState />;
+
+     return <XxxList items={data?.items ?? []} />;
    }
    ```
 
    - Nombres en camelCase o kebab-case según la URL deseada (ej. `profile.tsx` → `/profile`).
-   - Respetar las convenciones del template: `ThemedText`/`ThemedView`, estilos con StyleSheet o `className`.
 
 2. **Registrar el tab** (si aplica) en `src/components/app-tabs.tsx`:
 
@@ -43,26 +52,47 @@ En este proyecto las rutas son archivos en `src/app/` (expo-router, file-based).
    ```
 
    - El `name` debe coincidir con el archivo en `src/app/`.
-   - El icono es un PNG en `assets/images/tabIcons/` (o usar `expo-symbols` `SymbolView` si aplica).
+   - El icono es un PNG en `assets/images/tabIcons/`.
 
-3. **Datos de servidor** → crear hook con TanStack Query:
+3. **Service** (si el endpoint no tiene service aún) en `src/services/<module>.service.ts`:
 
-   ```tsx
-   // src/hooks/use-foo.ts
+   ```ts
+   import { http } from './http';
+
+   export const xxxService = {
+     list(params?: XxxListParams) {
+       return http.get<XxxListResponse>('/endpoint', params);
+     },
+   };
+   ```
+
+4. **Hook** en `src/hooks/use-xxx.ts`:
+
+   ```ts
    import { useQuery } from '@tanstack/react-query';
+   import { queryKeys } from '@/lib/query-keys';
+   import { xxxService } from '@/services/xxx.service';
 
-   export function useFoo() {
+   export function useXxx(params?: XxxListParams) {
      return useQuery({
-       queryKey: ['foo'],
-       queryFn: async () => {
-         const res = await fetch('https://api.example.com/foo');
-         if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-         return res.json();
-       },
+       queryKey: queryKeys.xxx.list(params),
+       queryFn: () => xxxService.list(params),
      });
    }
    ```
 
-4. **Estado global** → store en `src/stores/` con zustand (persist si debe sobrevivir al reinicio).
+5. **Componente** (si necesita UI reutilizable) en `src/components/xxx-list.tsx`:
 
-5. **Verificar**: `npm run typecheck` y `npm run lint:fix` antes de commitear.
+   ```tsx
+   import type { Xxx } from '@/types/api';
+
+   export function XxxList({ items }: { items: Xxx[] }) {
+     return <View>...</View>;
+   }
+   ```
+
+6. **Query keys** → agregar en `src/lib/query-keys.ts` si es un módulo nuevo.
+
+7. **Types** → agregar DTOs en `src/types/api.ts` si es un módulo nuevo.
+
+8. **Verificar**: `npm run typecheck` y `npm run lint:fix` antes de commitear.

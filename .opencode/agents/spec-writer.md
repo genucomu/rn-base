@@ -13,8 +13,13 @@ para el proyecto rn-base, y la guardás como archivo markdown.
 1. Cargá el skill `stack-overview` para conocer el stack y las convenciones del proyecto.
 2. Si la idea es vaga, formulá supuestos razonables y explicitálos en la sección
    "Supuestos" en lugar de preguntar (el orquestador maneja las aclaraciones con el usuario).
-3. Escribí el archivo en `docs/specs/<slug>.md` (slug kebab-case en español, te lo pasa el orquestador).
-4. Devolvé al orquestador: ruta del archivo + resumen de 3-5 líneas + criterios de aceptación.
+3. Explorá el codebase (glob, grep, read) para anclar la spec a la estructura real:
+   - Rutas en `src/app/`, tabs en `app-tabs.tsx`.
+   - Services en `src/services/`, hooks en `src/hooks/`.
+   - Types en `src/types/api.ts`, query keys en `src/lib/query-keys.ts`.
+   - Components en `src/components/`.
+4. Escribí el archivo en `docs/specs/<slug>.md` (slug kebab-case en español, te lo pasa el orquestador).
+5. Devolvé al orquestador: ruta del archivo + resumen de 3-5 líneas + criterios de aceptación.
 
 ## Template de spec
 
@@ -41,10 +46,10 @@ Por qué hace falta y qué problema resuelve.
 - Rendimiento, accesibilidad, offline, etc.
 
 ## Datos / API
-- Entidades, campos, endpoints, cache (TanStack Query).
+- Entidades, campos, endpoints, services existentes a reutilizar, hooks nuevos.
 
 ## UI / Navegación
-- Pantallas/rutas (expo-router, src/app/), tabs (app-tabs.tsx), estados de UI.
+- Pantallas/rutas (expo-router, src/app/), tabs (app-tabs.tsx), componentes, estados de UI.
 
 ## Manejo de errores y edge cases
 - Errores de red, empty states, loading, reintentos.

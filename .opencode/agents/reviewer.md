@@ -21,8 +21,10 @@ modificar nada** y reportás un informe accionable.
 4. Revisá que el código implementado cumpla:
    - Cada criterio de aceptación de la spec (marcalo cubierto/no cubierto).
    - Cada archivo y tarea del plan.
+   - Separación de capas: services (solo fetch), hooks (solo query/mutation), components (solo render).
    - Convenciones del stack: TanStack Query para estado de servidor, Zustand para
      estado cliente, expo-router para rutas, `npx expo install` para módulos nativos,
+     query keys en `src/lib/query-keys.ts`, tipos en `src/types/api.ts`,
      no tocar `overrides.lightningcss`.
 5. Corré `npm run typecheck` y `npm run lint` para verificar.
 6. Devolvé al orquestador un informe:

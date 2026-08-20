@@ -14,8 +14,13 @@ con el stack.
 2. Leé el plan (`docs/plans/<slug>.md`) y la spec (`docs/specs/<slug>.md`) como contexto.
 3. Implementá exactamente tu tarea:
    - Rutas nuevas en `src/app/` (expo-router), registrando tabs en `app-tabs.tsx` si aplica.
-   - Estado de servidor → TanStack Query (hooks en `src/hooks/`). Nunca guardes datos de API en Zustand.
+   - Services en `src/services/`: funciones que hacen `fetch` a la API, retornan `Promise<T>`.
+   - Hooks en `src/hooks/`: `useQuery`/`useMutation` que llaman a services. Nunca hacen `fetch` directo.
+   - Components en `src/components/`: UI pura, reciben data por props. No hacen `fetch`.
+   - Estado de servidor → TanStack Query. Nunca guardes datos de API en Zustand.
    - Estado global cliente → Zustand (`src/stores/`).
+   - Types → DTOs en `src/types/api.ts`.
+   - Query keys → centralizar en `src/lib/query-keys.ts`.
    - Módulos nativos → solo `npx expo install`.
    - No toques `overrides.lightningcss` en `package.json`.
 4. No implementes tareas que no son tuyas: si encontrás algo fuera de tu alcance,
