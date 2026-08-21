@@ -12,6 +12,8 @@ import { useAuthStore } from '@/stores/auth-store';
 
 // ── Online / focus managers ──────────────────────────────
 
+export { httpClient } from '@/lib/http-client';
+
 if (typeof window !== 'undefined' && window.addEventListener) {
   onlineManager.setEventListener((setOnline) => {
     const onOnline = () => setOnline(true);
