@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, type PressableProps, Text } from 'react-native';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
@@ -7,7 +8,7 @@ type ButtonProps = PressableProps & {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
-  children: string;
+  children: ReactNode;
 };
 
 const variantClasses: Record<ButtonVariant, string> = {

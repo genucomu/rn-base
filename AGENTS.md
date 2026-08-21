@@ -39,10 +39,10 @@ Proyecto base de React Native con **Expo SDK 57** (RN 0.86, React 19.2.3) + expo
 
 ## Workflow SDD (Spec-Driven Development)
 
-Features nuevas se construyen con el pipeline `/sdd`:
+Features nuevas se construyen con el pipeline SDD:
 
 ```
-/sdd "idea"
+idea de feature
   spec-writer ─► docs/specs/<slug>.md  → [gate: aprobás?]
   architect   ─► docs/plans/<slug>.md  → [gate: aprobás?]
   implementer ─► código (paralelo cuando no hay conflictos)
@@ -50,12 +50,31 @@ Features nuevas se construyen con el pipeline `/sdd`:
   reviewer    ─► informe diff vs spec/plan
 ```
 
-- Orquestador: agente `build` (playbook en `.opencode/skills/sdd-orchestrator/SKILL.md`).
-- Subagentes: `spec-writer`, `architect`, `implementer`, `reviewer` (en `.opencode/agents/`).
-- Artefactos: spec en `docs/specs/`, plan en `docs/plans/` (mismo slug kebab-case).
-- Gates: la tool `question` (Aprobar / Editar / Rechazar). En "Editar" se re-ejecuta
-  la etapa con el feedback del usuario.
-- El orquestador **no hace commit** sin pedirlo.
+### Sistema Genérico Multi-IA
+
+El proyecto está configurado para trabajar con múltiples IAs (opencode, Devin, etc.)
+de forma genérica:
+
+- **Configuración centralizada**: `.opencode/agents/` y `.opencode/skills/` contienen
+  las instrucciones y playbooks que cualquier IA puede seguir.
+- **Adaptadores Devin**: `.devin/skills/` contiene skills que actúan como puentes
+  entre el sistema opencode y las herramientas nativas de Devin:
+  - `sdd-orchestrator`: Orquestador SDD adaptado para `run_subagent` de Devin
+  - `opencode-agent`: Carga instrucciones de agentes opencode para subagentes
+  - `opencode-skill`: Carga skills opencode como contexto adicional
+- **Artefactos**: spec en `docs/specs/`, plan en `docs/plans/` (mismo slug kebab-case).
+- **Gates**: Aprobación del usuario (Aprobar / Editar / Rechazar). En "Editar" se
+  re-ejecuta la etapa con el feedback.
+- **El orquestador nunca hace commit** sin pedirlo.
+
+### Uso
+
+- **Con opencode**: Usa el comando `/sdd "idea"` que invoca el orquestador nativo.
+- **Con Devin**: Invocá el skill `sdd-orchestrator` y pasale la idea. El skill usa
+  `run_subagent` para coordinar los subagentes según las instrucciones de
+  `.opencode/agents/`.
+
+Ambos sistemas producen los mismos artefactos y siguen el mismo flujo.
 
 ## Docs
 
