@@ -31,6 +31,9 @@
   "css": {
     "formatter": {
       "enabled": false
+    },
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {

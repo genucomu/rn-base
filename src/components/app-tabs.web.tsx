@@ -1,3 +1,4 @@
+import type { Href } from 'expo-router';
 import {
   TabList,
   type TabListProps,
@@ -19,10 +20,10 @@ export default function AppTabs() {
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
-          <TabTrigger name="home" href="/" asChild>
+          <TabTrigger name="home" href={'/(tabs)' as Href} asChild>
             <TabButton>Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
+          <TabTrigger name="explore" href={'/(tabs)/explore' as Href} asChild>
             <TabButton>Explore</TabButton>
           </TabTrigger>
         </CustomTabList>
