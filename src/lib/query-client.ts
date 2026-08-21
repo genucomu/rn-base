@@ -1,6 +1,8 @@
 import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query';
 import { AppState, type AppStateStatus } from 'react-native';
 
+export { httpClient } from '@/lib/http-client';
+
 if (typeof window !== 'undefined' && window.addEventListener) {
   onlineManager.setEventListener((setOnline) => {
     const onOnline = () => setOnline(true);

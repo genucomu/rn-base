@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { httpClient } from '@/lib/http-client';
+
 interface HealthResponse {
   status: string;
   time: string;
@@ -8,10 +10,7 @@ interface HealthResponse {
 const HEALTH_KEY = ['health'] as const;
 
 async function fetchHealth(): Promise<HealthResponse> {
-  const res = await fetch('https://api.github.com/zen');
-  if (!res.ok) {
-    throw new Error(`Request failed with status ${res.status}`);
-  }
+  await httpClient.get<string>('https://api.github.com/zen');
   return { status: 'ok', time: new Date().toLocaleTimeString() };
 }
 
