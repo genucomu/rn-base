@@ -1,4 +1,4 @@
-# Refactor del cliente HTTP
+﻿# Refactor del cliente HTTP
 
 ## Contexto / Problema
 
@@ -61,9 +61,9 @@ El problema actual es que cada flujo de datos repite lógica ad-hoc y dificulta 
   - `timeout`
   - `retry`
 - Contrato de response:
-  - `data: T`
-  - `status: number`
-  - `headers`
+  - `T` directo — el cliente retorna `res.json()` sin wrapping; `T` debe coincidir con el JSON exacto del backend
+  - Status 204: retorna `undefined`
+  - Contratos detallados por tipo de endpoint: `src/types/api-contracts.md`
 - Error estándar:
   - `code: string`
   - `message: string`

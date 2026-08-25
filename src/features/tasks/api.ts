@@ -1,5 +1,7 @@
 import type { CreateTaskInput, Task, UpdateTaskInput } from '@/features/tasks/types';
 import { ApiError } from '@/lib/http-client.types';
+import { http } from '@/services/http';
+import type { PaginatedResponse } from '@/types/pagination';
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -48,9 +50,10 @@ let tasks: Task[] = [
 export async function listTasks(
   groupId: string,
   _filters?: { status?: string; priority?: string },
-): Promise<Task[]> {
-  await wait(200);
-  return tasks.filter((t) => t.groupId === groupId);
+): Promise<PaginatedResponse<Task>> {
+  return http.get<PaginatedResponse<Task>>('/tasks/tasks', {
+    groupId,
+  });
 }
 
 export async function getTask(groupId: string, id: string): Promise<Task> {

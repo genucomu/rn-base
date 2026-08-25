@@ -10,8 +10,8 @@ import { useTheme } from '@/hooks/use-theme';
 
 export default function GroupDetailScreen() {
   const theme = useTheme();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: group, isLoading, error } = useGroup(id);
+  const params = useLocalSearchParams<{ id: string }>();
+  const { data: group, isLoading, error } = useGroup(params.id);
   const updateGroup = useUpdateGroup();
   const archiveGroup = useArchiveGroup();
 

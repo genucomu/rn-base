@@ -54,7 +54,7 @@ export default function HomeScreen() {
         className="flex-1 px-4 items-center gap-3 max-w-200"
         style={{ paddingBottom: BottomTabInset + 16 }}
       >
-        <View className="w-full flex-row justify-end">
+        <View className="w-full flex-row justify-end mt-20">
           <Pressable
             onPress={handleLogout}
             className="rounded-lg bg-destructive px-4 py-2 border"

@@ -12,6 +12,9 @@ export function useTasks(groupId?: string) {
       if (!groupId) throw new Error('Missing groupId');
       return listTasks(groupId);
     },
+    select: (data) => {
+      return data.items;
+    },
   });
 }
 

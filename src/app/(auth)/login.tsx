@@ -1,6 +1,14 @@
 import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useTheme } from '@/hooks/use-theme';
 import { useLoginMutation } from '@/lib/api/auth';
 import { useAuthStore } from '@/stores/auth-store';
 
@@ -8,6 +16,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [email, setEmail] = useState('');
@@ -46,13 +55,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center bg-background px-6">
+    <View className="flex-1 justify-center px-6" style={{ backgroundColor: theme.background }}>
       <View className="gap-4">
-        <Text className="text-2xl font-bold text-foreground text-center">Iniciar sesión</Text>
+        <Text className="text-2xl font-bold text-center" style={{ color: theme.text }}>
+          Iniciar sesión
+        </Text>
         <TextInput
-          className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+          className="rounded-lg px-4 py-3"
+          style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
           placeholder="Email"
-          placeholderClassName="text-muted-foreground"
+          placeholderTextColor={theme.textSecondary}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
@@ -61,18 +73,24 @@ export default function LoginScreen() {
           accessibilityLabel="Email"
         />
         <TextInput
-          className="border border-border rounded-lg px-4 py-3 text-foreground bg-card"
+          className="rounded-lg px-4 py-3"
+          style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
           placeholder="Contraseña"
-          placeholderClassName="text-muted-foreground"
+          placeholderTextColor={theme.textSecondary}
           secureTextEntry
           autoComplete="password"
           value={password}
           onChangeText={setPassword}
           accessibilityLabel="Contraseña"
         />
-        {error && <Text className="text-destructive text-sm text-center">{error}</Text>}
+        {error && (
+          <Text className="text-sm text-center" style={styles.error}>
+            {error}
+          </Text>
+        )}
         <TouchableOpacity
-          className="bg-primary rounded-lg py-3 items-center"
+          className="rounded-lg py-3 items-center"
+          style={styles.button}
           activeOpacity={0.7}
           onPress={handleLogin}
           disabled={loginMutation.isPending}
@@ -82,10 +100,23 @@ export default function LoginScreen() {
           {loginMutation.isPending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-primary-foreground font-semibold text-base">Iniciar sesión</Text>
+            <Text className="text-white font-semibold text-base">Iniciar sesión</Text>
           )}
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  input: {
+    borderWidth: 1,
+    borderColor: '#60646C',
+  },
+  error: {
+    color: '#EF4444',
+  },
+  button: {
+    backgroundColor: '#25D366',
+  },
+});

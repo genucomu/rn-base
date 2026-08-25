@@ -12,7 +12,6 @@ export default function GroupsScreen() {
   const theme = useTheme();
   const { data: groups = [], isLoading, error } = useGroups();
   const createGroup = useCreateGroup();
-
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -44,7 +43,9 @@ export default function GroupsScreen() {
             groups.map((group) => (
               <Pressable
                 key={group.id}
-                onPress={() => router.push({ pathname: '/groups/[id]', params: { id: group.id } })}
+                onPress={() => {
+                  return router.push({ pathname: '/groups/[id]', params: { id: group.id } });
+                }}
                 style={({ pressed }) => [
                   styles.groupCard,
                   { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.9 : 1 },
@@ -56,7 +57,7 @@ export default function GroupsScreen() {
                     {group.name}
                   </ThemedText>
                   <ThemedText themeColor="textSecondary" type="small">
-                    {group.members.length} members · {group.status}
+                    {group.status}
                   </ThemedText>
                   <ThemedText themeColor="textSecondary" type="small" style={styles.description}>
                     {group.description}

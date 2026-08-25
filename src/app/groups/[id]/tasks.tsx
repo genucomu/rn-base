@@ -14,7 +14,7 @@ export default function TasksListScreen() {
   const { data: tasks = [], isLoading, error } = useTasks(groupId);
   const createTask = useCreateTask(groupId);
   const deleteTask = useDeleteTask(groupId);
-
+  console.log('tasks: ', tasks);
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>

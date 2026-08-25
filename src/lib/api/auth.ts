@@ -10,7 +10,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken: string | null;
   user: User;
 }
 
@@ -62,7 +62,34 @@ async function loginRequest(data: LoginRequest): Promise<LoginResponse> {
     throw new ApiError(response.status, message, body);
   }
 
-  return body as LoginResponse;
+  const rawBody = body as {
+    accessToken?: string;
+    access_token?: string;
+    refreshToken?: string;
+    refresh_token?: string;
+    token?: string;
+    user?: User;
+    data?: {
+      accessToken?: string;
+      access_token?: string;
+      refreshToken?: string;
+      refresh_token?: string;
+      token?: string;
+      user?: User;
+    };
+  };
+  const responseBody = rawBody.data ?? rawBody;
+  const accessToken = responseBody.accessToken ?? responseBody.access_token ?? responseBody.token;
+
+  if (!accessToken || !responseBody.user) {
+    throw new ApiError(response.status, 'Respuesta de login inválida', body);
+  }
+
+  return {
+    accessToken,
+    refreshToken: responseBody.refreshToken ?? responseBody.refresh_token ?? null,
+    user: responseBody.user,
+  };
 }
 
 // ── Hook ────────────────────────────────────────────────

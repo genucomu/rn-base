@@ -8,12 +8,16 @@ import {
   updateGroup,
 } from '@/features/groups/api';
 import type { CreateGroupInput, Group, UpdateGroupInput } from '@/features/groups/types';
+import { useAuthStore } from '@/stores/auth-store';
 
 const GROUPS_QUERY_KEY = ['groups'] as const;
 
 export function useGroups() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return useQuery({
     queryKey: GROUPS_QUERY_KEY,
+    enabled: isAuthenticated,
     queryFn: listGroups,
   });
 }
@@ -64,11 +68,7 @@ export function useArchiveGroup() {
 
   return useMutation({
     mutationFn: (id: string) => archiveGroup(id),
-    onSuccess: (group) => {
-      queryClient.setQueryData<Group[]>(GROUPS_QUERY_KEY, (current) =>
-        (current ?? []).map((item) => (item.id === group.id ? group : item)),
-      );
-      queryClient.setQueryData(['groups', group.id], group);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GROUPS_QUERY_KEY });
     },
   });

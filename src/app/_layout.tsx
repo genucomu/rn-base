@@ -44,7 +44,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AnimatedSplashOverlay />
-        <Stack screenOptions={{ headerShown: false }} />
+        {hydrated && <Stack screenOptions={{ headerShown: false }} />}
       </ThemeProvider>
     </QueryClientProvider>
   );

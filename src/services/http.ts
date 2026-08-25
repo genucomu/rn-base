@@ -56,29 +56,34 @@ async function requestWithRefresh<T>(
         throw error;
       }
 
-      try {
-        const refreshRes = await fetch(`${config.apiBaseUrl}/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken }),
-        });
+      let refreshRes: Response;
+      refreshRes = await fetch(`${config.apiBaseUrl}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
 
-        if (!refreshRes.ok) {
+      console.log('Refresh response:', refreshRes.status);
+
+      if (!refreshRes.ok) {
+        if (refreshRes.status === 401 || refreshRes.status === 403) {
           clearAuth();
-          throw error;
         }
-
-        const data = (await refreshRes.json()) as {
-          accessToken: string;
-          refreshToken: string;
-        };
-        setTokens(data.accessToken, data.refreshToken);
-
-        return request<T>(method, path, options);
-      } catch {
-        clearAuth();
-        throw error;
+        throw new HttpError(refreshRes.status, 'Refresh token inválido o expirado');
       }
+
+      const data = (await refreshRes.json()) as {
+        accessToken: string;
+        refreshToken: string;
+      };
+
+      if (!data.accessToken || !data.refreshToken) {
+        throw new Error('Respuesta inválida al renovar la sesión');
+      }
+
+      setTokens(data.accessToken, data.refreshToken);
+
+      return request<T>(method, path, options);
     }
     throw error;
   }
