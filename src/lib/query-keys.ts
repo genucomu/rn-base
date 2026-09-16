@@ -52,4 +52,12 @@ export const queryKeys = {
     importedProducts: (params?: Record<string, unknown>) =>
       [...queryKeys.pricing.all, 'importedProducts', params] as const,
   },
+
+  tasks: {
+    all: ['tasks'] as const,
+    list: (groupId: string, params?: { status?: string; priority?: string }) =>
+      [...queryKeys.tasks.all, 'list', groupId, params] as const,
+    detail: (groupId: string, id: string) =>
+      [...queryKeys.tasks.all, 'detail', groupId, id] as const,
+  },
 } as const;

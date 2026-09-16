@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createTask, deleteTask, getTask, listTasks, updateTask } from '@/features/tasks/api';
 import type { CreateTaskInput, UpdateTaskInput } from '@/features/tasks/types';
-
-const TASKS_KEY = (groupId: string) => ['groups', groupId, 'tasks'] as const;
+import { queryKeys } from '@/lib/query-keys';
 
 export function useTasks(groupId?: string) {
   return useQuery({
-    queryKey: groupId ? TASKS_KEY(groupId) : ['tasks'],
+    queryKey: groupId ? queryKeys.tasks.list(groupId) : queryKeys.tasks.all,
     enabled: Boolean(groupId),
     queryFn: () => {
       if (!groupId) throw new Error('Missing groupId');
@@ -20,7 +19,7 @@ export function useTasks(groupId?: string) {
 
 export function useTask(groupId?: string, taskId?: string) {
   return useQuery({
-    queryKey: ['groups', groupId, 'tasks', taskId],
+    queryKey: groupId && taskId ? queryKeys.tasks.detail(groupId, taskId) : queryKeys.tasks.all,
     enabled: Boolean(groupId && taskId),
     queryFn: () => {
       if (!groupId || !taskId) throw new Error('Missing params');
@@ -37,7 +36,8 @@ export function useCreateTask(groupId?: string) {
       return createTask(groupId, input);
     },
     onSuccess: (task) => {
-      qc.invalidateQueries({ queryKey: TASKS_KEY(task.groupId) });
+      if (!task.groupId) throw new Error('Invalid task response: missing groupId');
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.list(task.groupId) });
     },
   });
 }
@@ -50,8 +50,8 @@ export function useUpdateTask(groupId?: string) {
       return updateTask(groupId, id, input);
     },
     onSuccess: (task) => {
-      qc.invalidateQueries({ queryKey: TASKS_KEY(task.groupId) });
-      qc.setQueryData(['groups', task.groupId, 'tasks', task.id], task);
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.list(task.groupId) });
+      qc.setQueryData(queryKeys.tasks.detail(task.groupId, task.id), task);
     },
   });
 }
@@ -64,7 +64,7 @@ export function useDeleteTask(groupId?: string) {
       return deleteTask(groupId, id);
     },
     onSuccess: () => {
-      if (groupId) qc.invalidateQueries({ queryKey: TASKS_KEY(groupId) });
+      if (groupId) qc.invalidateQueries({ queryKey: queryKeys.tasks.list(groupId) });
     },
   });
 }

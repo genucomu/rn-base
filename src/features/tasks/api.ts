@@ -66,28 +66,25 @@ export async function getTask(groupId: string, id: string): Promise<Task> {
 }
 
 export async function createTask(groupId: string, input: CreateTaskInput): Promise<Task> {
+  if (!groupId) {
+    throw new ApiError({ code: 'GROUP_ID_REQUIRED', message: 'groupId is required', status: 422 });
+  }
+
   const title = input.title?.trim();
   if (!title) {
     throw new ApiError({ code: 'TASK_TITLE_REQUIRED', message: 'Title is required', status: 422 });
   }
 
-  await wait(250);
-  const newTask: Task = {
-    id: `t-${Date.now()}`,
+  const body: CreateTaskInput & { groupId: string } = {
     groupId,
     title,
-    description: input.description ?? '',
-    status: 'todo',
-    priority: input.priority ?? 'medium',
-    assigneeId: input.assigneeId,
-    dueDate: input.dueDate,
-    completedAt: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    ...(input.description !== undefined && { description: input.description }),
+    ...(input.priority !== undefined && { priority: input.priority }),
+    ...(input.assigneeId !== undefined && { assigneeId: input.assigneeId }),
+    ...(input.dueDate !== undefined && { dueDate: input.dueDate }),
   };
 
-  tasks = [newTask, ...tasks];
-  return { ...newTask };
+  return http.post<Task>('/tasks/tasks', body);
 }
 
 export async function updateTask(
