@@ -5,16 +5,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useCreateTask, useDeleteTask, useTasks } from '@/features/tasks/queries';
+import { useDeleteTask, useTasks } from '@/features/tasks/queries';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function TasksListScreen() {
   const theme = useTheme();
   const { id: groupId } = useLocalSearchParams<{ id: string }>();
   const { data: tasks = [], isLoading, error } = useTasks(groupId);
-  const createTask = useCreateTask(groupId);
   const deleteTask = useDeleteTask(groupId);
-  console.log('tasks: ', tasks);
+
+  const openCreateTask = () =>
+    router.push({ pathname: '/groups/[id]/tasks/new', params: { id: groupId } });
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -26,13 +28,7 @@ export default function TasksListScreen() {
           <ThemedText type="subtitle">Tasks</ThemedText>
 
           <Pressable
-            onPress={() =>
-              createTask.mutate({
-                title: `New task ${tasks.length + 1}`,
-                description: 'Created from tasks screen',
-                priority: 'medium',
-              })
-            }
+            onPress={openCreateTask}
             style={({ pressed }) => [
               styles.createButton,
               { backgroundColor: theme.backgroundSelected, opacity: pressed ? 0.9 : 1 },
@@ -43,6 +39,23 @@ export default function TasksListScreen() {
 
           {isLoading && <ThemedText>Loading tasks…</ThemedText>}
           {error && <ThemedText themeColor="textSecondary">Could not load tasks.</ThemedText>}
+
+          {!isLoading && !error && tasks.length === 0 && (
+            <ThemedView style={styles.emptyState}>
+              <ThemedText themeColor="textSecondary">No tasks yet.</ThemedText>
+              <Pressable
+                onPress={openCreateTask}
+                style={({ pressed }) => [
+                  styles.emptyStateButton,
+                  { backgroundColor: theme.backgroundElement, opacity: pressed ? 0.9 : 1 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Create your first task"
+              >
+                <ThemedText type="smallBold">Create your first task</ThemedText>
+              </Pressable>
+            </ThemedView>
+          )}
 
           {!isLoading &&
             tasks.map((task) => (
@@ -106,4 +119,10 @@ const styles = StyleSheet.create({
   taskRow: { flex: 1, gap: Spacing.one },
   title: { fontWeight: '700' },
   deleteButton: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one },
+  emptyState: { alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.four },
+  emptyStateButton: {
+    borderRadius: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
 });

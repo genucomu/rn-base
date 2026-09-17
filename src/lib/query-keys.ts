@@ -55,6 +55,7 @@ export const queryKeys = {
 
   tasks: {
     all: ['tasks'] as const,
+    types: ['tasks', 'types'] as const,
     list: (groupId: string, params?: { status?: string; priority?: string }) =>
       [...queryKeys.tasks.all, 'list', groupId, params] as const,
     detail: (groupId: string, id: string) =>

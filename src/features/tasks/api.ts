@@ -1,51 +1,14 @@
-import type { CreateTaskInput, Task, UpdateTaskInput } from '@/features/tasks/types';
+import type {
+  AssignTaskInput,
+  CreateTaskInput,
+  Task,
+  TaskDetail,
+  TaskType,
+  UpdateTaskInput,
+} from '@/features/tasks/types';
 import { ApiError } from '@/lib/http-client.types';
 import { http } from '@/services/http';
 import type { PaginatedResponse } from '@/types/pagination';
-
-const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
-
-let tasks: Task[] = [
-  {
-    id: 't-1',
-    groupId: 'grp-1',
-    title: 'Define launch metrics',
-    description: 'Definir KPIs y dashboards iniciales',
-    status: 'in_progress',
-    priority: 'high',
-    assigneeId: 'u-2',
-    dueDate: '2026-09-01T00:00:00.000Z',
-    completedAt: null,
-    createdAt: '2026-08-10T10:00:00.000Z',
-    updatedAt: '2026-08-18T10:00:00.000Z',
-  },
-  {
-    id: 't-2',
-    groupId: 'grp-1',
-    title: 'Write release notes',
-    description: 'Borrador de notas para stakeholders',
-    status: 'todo',
-    priority: 'medium',
-    assigneeId: 'u-1',
-    dueDate: undefined,
-    completedAt: null,
-    createdAt: '2026-08-12T09:00:00.000Z',
-    updatedAt: '2026-08-12T09:00:00.000Z',
-  },
-  {
-    id: 't-3',
-    groupId: 'grp-2',
-    title: 'Upgrade workspace infra',
-    description: 'Actualizar dependencias y scripts internos',
-    status: 'todo',
-    priority: 'low',
-    assigneeId: 'u-4',
-    dueDate: undefined,
-    completedAt: null,
-    createdAt: '2026-08-09T08:00:00.000Z',
-    updatedAt: '2026-08-09T08:00:00.000Z',
-  },
-];
 
 export async function listTasks(
   groupId: string,
@@ -56,13 +19,16 @@ export async function listTasks(
   });
 }
 
-export async function getTask(groupId: string, id: string): Promise<Task> {
-  await wait(150);
-  const match = tasks.find((t) => t.groupId === groupId && t.id === id);
-  if (!match) {
-    throw new ApiError({ code: 'TASK_NOT_FOUND', message: 'Task not found', status: 404 });
-  }
-  return { ...match };
+export async function listTaskTypes(): Promise<TaskType[]> {
+  return http.get<TaskType[]>('/tasks/task-types');
+}
+
+export function getTask(id: string): Promise<TaskDetail> {
+  return http.get<TaskDetail>(`/tasks/tasks/${id}`);
+}
+
+export function assignTask(id: string, input: AssignTaskInput): Promise<TaskDetail> {
+  return http.post<TaskDetail>(`/tasks/tasks/${id}/assign`, input);
 }
 
 export async function createTask(groupId: string, input: CreateTaskInput): Promise<Task> {
@@ -75,13 +41,13 @@ export async function createTask(groupId: string, input: CreateTaskInput): Promi
     throw new ApiError({ code: 'TASK_TITLE_REQUIRED', message: 'Title is required', status: 422 });
   }
 
-  const body: CreateTaskInput & { groupId: string } = {
+  const body = {
     groupId,
+    typeId: input.typeId,
     title,
-    ...(input.description !== undefined && { description: input.description }),
-    ...(input.priority !== undefined && { priority: input.priority }),
-    ...(input.assigneeId !== undefined && { assigneeId: input.assigneeId }),
-    ...(input.dueDate !== undefined && { dueDate: input.dueDate }),
+    description: input.description,
+    priceCents: input.priceCents,
+    assigneeId: input.assigneeId,
   };
 
   return http.post<Task>('/tasks/tasks', body);
@@ -91,35 +57,28 @@ export async function updateTask(
   groupId: string,
   id: string,
   input: UpdateTaskInput,
-): Promise<Task> {
-  await wait(200);
-  const idx = tasks.findIndex((t) => t.groupId === groupId && t.id === id);
-  if (idx === -1) {
-    throw new ApiError({ code: 'TASK_NOT_FOUND', message: 'Task not found', status: 404 });
+): Promise<TaskDetail> {
+  if (!groupId) {
+    throw new ApiError({ code: 'GROUP_ID_REQUIRED', message: 'groupId is required', status: 422 });
   }
 
-  const current = tasks[idx];
-  const updated: Task = {
-    ...current,
-    title: input.title?.trim() || current.title,
-    description: input.description ?? current.description,
-    status: (input.status as Task['status']) ?? current.status,
-    priority: (input.priority as Task['priority']) ?? current.priority,
-    assigneeId: input.assigneeId ?? current.assigneeId,
-    dueDate: input.dueDate ?? current.dueDate,
-    completedAt: input.status === 'done' ? new Date().toISOString() : current.completedAt,
-    updatedAt: new Date().toISOString(),
-  };
-
-  tasks[idx] = updated;
-  return { ...updated };
+  return http.patch<TaskDetail>(`/tasks/tasks/${id}`, {
+    title: input.title?.trim(),
+    description: input.description,
+    priceCents: input.priceCents,
+  });
 }
 
-export async function deleteTask(groupId: string, id: string): Promise<void> {
-  await wait(150);
-  const idx = tasks.findIndex((t) => t.groupId === groupId && t.id === id);
-  if (idx === -1) {
-    throw new ApiError({ code: 'TASK_NOT_FOUND', message: 'Task not found', status: 404 });
+export function changeTaskStatus(id: string, status: Task['status']): Promise<TaskDetail> {
+  return http.patch<TaskDetail>(`/tasks/tasks/${id}/status`, { status });
+}
+
+export function deleteTask(groupId: string, id: string): Promise<void> {
+  if (!groupId) {
+    return Promise.reject(
+      new ApiError({ code: 'GROUP_ID_REQUIRED', message: 'groupId is required', status: 422 }),
+    );
   }
-  tasks = tasks.filter((t) => !(t.groupId === groupId && t.id === id));
+
+  return http.delete<void>(`/tasks/tasks/${id}`);
 }

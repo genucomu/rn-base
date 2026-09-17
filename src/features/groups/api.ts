@@ -71,13 +71,7 @@ export async function listGroups(): Promise<Group[]> {
 
 export async function getGroupById(id: string): Promise<Group> {
   const group = await http.get<ApiGroup>(`/tasks/groups/${id}`);
-  try {
-    const response = await withMembers(group);
-    return response;
-  } catch (error) {
-    console.error('Error fetching group members:', error);
-    return mapGroup(group);
-  }
+  return withMembers(group);
 }
 
 export async function createGroup(input: CreateGroupInput): Promise<Group> {

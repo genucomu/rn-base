@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { createTask, deleteTask, getTask, listTasks, updateTask } from '@/features/tasks/api';
-import type { CreateTaskInput, UpdateTaskInput } from '@/features/tasks/types';
+import {
+  assignTask,
+  changeTaskStatus,
+  createTask,
+  deleteTask,
+  getTask,
+  listTasks,
+  listTaskTypes,
+  updateTask,
+} from '@/features/tasks/api';
+import type { AssignTaskInput, CreateTaskInput, UpdateTaskInput } from '@/features/tasks/types';
 import { queryKeys } from '@/lib/query-keys';
 
 export function useTasks(groupId?: string) {
@@ -23,8 +32,15 @@ export function useTask(groupId?: string, taskId?: string) {
     enabled: Boolean(groupId && taskId),
     queryFn: () => {
       if (!groupId || !taskId) throw new Error('Missing params');
-      return getTask(groupId, taskId);
+      return getTask(taskId);
     },
+  });
+}
+
+export function useTaskTypes() {
+  return useQuery({
+    queryKey: queryKeys.tasks.types,
+    queryFn: listTaskTypes,
   });
 }
 
@@ -51,7 +67,37 @@ export function useUpdateTask(groupId?: string) {
     },
     onSuccess: (task) => {
       qc.invalidateQueries({ queryKey: queryKeys.tasks.list(task.groupId) });
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(task.groupId, task.id) });
+    },
+  });
+}
+
+export function useChangeTaskStatus(groupId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => {
+      if (!groupId) throw new Error('Missing groupId');
+      return changeTaskStatus(id, status as Parameters<typeof changeTaskStatus>[1]);
+    },
+    onSuccess: (task) => {
       qc.setQueryData(queryKeys.tasks.detail(task.groupId, task.id), task);
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(task.groupId, task.id) });
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.list(task.groupId) });
+    },
+  });
+}
+
+export function useAssignTask(groupId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ taskId, input }: { taskId: string; input: AssignTaskInput }) => {
+      if (!groupId || !taskId || !input.assigneeId) throw new Error('Missing params');
+      return assignTask(taskId, input);
+    },
+    onSuccess: (task) => {
+      qc.setQueryData(queryKeys.tasks.detail(task.groupId, task.id), task);
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.detail(task.groupId, task.id) });
+      qc.invalidateQueries({ queryKey: queryKeys.tasks.list(task.groupId) });
     },
   });
 }
@@ -63,8 +109,11 @@ export function useDeleteTask(groupId?: string) {
       if (!groupId) throw new Error('Missing groupId');
       return deleteTask(groupId, id);
     },
-    onSuccess: () => {
-      if (groupId) qc.invalidateQueries({ queryKey: queryKeys.tasks.list(groupId) });
+    onSuccess: (_data, id) => {
+      if (groupId) {
+        qc.invalidateQueries({ queryKey: queryKeys.tasks.list(groupId) });
+        qc.removeQueries({ queryKey: queryKeys.tasks.detail(groupId, id) });
+      }
     },
   });
 }
